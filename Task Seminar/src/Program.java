@@ -1,19 +1,20 @@
 package src;
 
-    
 
-    import java.util.Scanner;
-    
-    public class Program {
-      public static void main(String[] args) {
-        FamilyTree familyTree = new FamilyTree();
-        UserMenu menu = new UserMenu();
-    
-        menu.firstFill(familyTree);
-        menu.launchMenu(familyTree);
-    
-      }
-    
-    } 
+import src.FamilyTree;
+import src.Human;
+import src.TreeFirstFill;
 
+public class Program {
+  public static void main(String[] args) {
+    FamilyTree<Human> familyTree = new FamilyTree<Human>();
+    new TreeFirstFill(familyTree);
+    Controller<Human> control = new Controller(familyTree);
+
+    while (control.getControllerStatus()) {
+      control.startControl();
+    }
+  }
+
+}
 

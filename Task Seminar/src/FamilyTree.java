@@ -1,124 +1,91 @@
 
     package src;
 
-    import java.util.ArrayList;
+    import java.io.Serializable;
     import java.util.HashMap;
-    import java.util.List;
+    import java.util.Iterator;
     import java.util.Map;
-    import java.util.Scanner;;
     
-    public class FamilyTree {
+    import src.FTIterator;
     
-      private List<Human> humans;
+    public class FamilyTree<T extends Human> implements Serializable, Iterable<T> {
     
-      public FamilyTree(List<Human> humans) {
+      private int id = 0; // Человек получает id именно в дереве. Сама сущность id не имеет
+      private Map<Integer, T> humans;
+    
+      public FamilyTree(Map<Integer, T> humans) {
         this.humans = humans;
       }
     
       public FamilyTree() {
-        this(new ArrayList<>());
+        this(new HashMap<Integer, T>());
       }
     
-      public void addHuman(Human human) {
-        this.humans.add(human);
+      public void addHuman(T human) {
+        this.humans.putIfAbsent(id++, human);
       }
     
-      public void addHuman(String fullName, String gender) {
-        addHuman(new Human(fullName, gender));
+      /**
+       * Очищает дерево
+       */
+      public void clearTree() {
+        this.humans.clear();
       }
     
-      public void addHuman(String fullName, String gender, Human mother, Human father) {
-        addHuman(new Human(fullName, gender, mother, father));
+      public Map<Integer, T> getAllHumans() {
+        return humans;
       }
     
-      public void createHuman() {
-        Scanner str = new Scanner(System.in);
-        System.out.print("\nВведите имя и фамилию: ");
-        String fullName = str.next() + " " + str.next();
-        System.out.print("Выберите пол (введите букву: М - мужской, Ж - женский): ");
-        String gender = str.next().toLowerCase();
-        if (gender.equals("ж"))
-          gender = "Женский";
-        else
-          gender = "Мужской"; // Это, конечно, не совсем корректно, но в рамках изучения ООП пока сделано так
-        System.out.println("Введено: Имя " + fullName + " пол " + gender);
+      public Map<Integer, T> getHumansByGender(String gender) {
+        Map<Integer, T> humansWithGender = new HashMap<>();
     
-        Map<Integer, Human> availableMothers = chooseParent("женский");
-        Human parentMother = availableMothers.get(str.nextInt());
+        if (gender == null) {
+          return getAllHumans();
+        } else {
+          for (Map.Entry<Integer, T> person : humans.entrySet()) {
+            if (person.getValue()
+                .getGender()
+                .toLowerCase()
+                .equals(gender.toLowerCase()))
+              humansWithGender.putIfAbsent(person.getKey(), person.getValue());
+          }
+        }
     
-        Map<Integer, Human> availableFathers = chooseParent("мужской");
-        Human parentFather = availableFathers.get(str.nextInt());
-    
-        addHuman(new Human(fullName, gender, parentMother, parentFather));
+        return humansWithGender;
       }
     
-      public Human searchByName(String fullName) {
-        for (Human person : humans) {
-          if (person.getFullName().toLowerCase().equals(fullName.toLowerCase())) {
-            System.out.println(person);
+      /**
+       * @param gender
+       * @return map список возможных родителей по определенному полу
+       */
+      public Map<Integer, T> getParents(String gender) {
+        Map<Integer, T> availableParents = getHumansByGender(gender);
+    
+        return availableParents;
+      }
+    
+      /**
+       * Производит поиск в дереве человека по полному имени
+       * 
+       * @param fullName
+       * @return найденный человек (экземпляр класса Human) или null, если результата
+       *         нет
+       */
+      public Map.Entry<Integer, T> searchByName(String fullName) {
+        for (Map.Entry<Integer, T> person : humans.entrySet()) {
+          if (person.getValue()
+              .getFullName()
+              .toLowerCase()
+              .equals(fullName.toLowerCase())) {
             return person;
           }
         }
         return null;
       }
     
-      public Human askName() {
-        Scanner str = new Scanner(System.in); // Если закрыть str в конце метода, то появляется ошибка в работе программы.
-        System.out.println("\nВведите имя и фамилию: ");
-        String fullName = str.next() + " " + str.next(); // Можно ли ссчитать два слова без двойного использования метода
-                                                         // 'next()'?
-    
-        return this.searchByName(fullName);
+      @Override
+      public Iterator<T> iterator() {
+        return new FTIterator<T>(humans);
       }
     
-      public void moreInfo(Human person) {
-        if (person != null) {
-          Scanner str = new Scanner(System.in);
-          System.out.println("Получить дополнительную информацию о найденном человеке? (y/n): ");
-          if (str.next().toLowerCase().equals("y"))
-            System.out.println(person.getInfo());
-        } else {
-          System.out.println("Человек не найден");
-        }
-      }
-    
-      public void showHumans() {
-        for (Human person : humans)
-          System.out.println(person);
-      }
-    
-      public Map<Integer, Human> getHumans(String gender) {
-        Map<Integer, Human> foundPeople = new HashMap<>();
-    
-        int count = 0;
-        if (gender == null) {
-          for (Human person : humans)
-            foundPeople.put(++count, person);
-        } else {
-          for (Human person : humans) {
-            if (person.getGender().toLowerCase().equals(gender.toLowerCase()))
-              foundPeople.put(++count, person);
-          }
-        }
-    
-        return foundPeople;
-      }
-    
-      public Map<Integer, Human> getHumans() {
-        return getHumans(null);
-      }
-    
-      private Map<Integer, Human> chooseParent(String gender) {
-        Map<Integer, Human> availableParents = getHumans(gender);
-        System.out.println(availableParents);
-        System.out.println("Выберите родителя: ");
-        availableParents.entrySet()
-            .stream()
-            .forEach(person -> System.out.println(person.getKey() + " - " +
-                person.getValue()));
-    
-        return availableParents;
-      }
-    
-    } 
-
+    }
