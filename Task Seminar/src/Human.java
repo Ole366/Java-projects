@@ -1,5 +1,6 @@
 package src;
 
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +34,14 @@ public class Human implements Serializable, Comparable<Human> {
       mother.children.add(this);
   }
 
+  public String getFullName() {
+    return fullName;
+  }
+
+  public String getGender() {
+    return gender;
+  }
+
   /**
    * @return строку со списком детей или с сообщением об их отсутствии
    *         у объекта Human
@@ -46,14 +55,6 @@ public class Human implements Serializable, Comparable<Human> {
 
   public int getChildrensNumber() {
     return children.size();
-  }
-
-  public String getFullName() {
-    return fullName;
-  }
-
-  public String getGender() {
-    return gender;
   }
 
   /**
@@ -73,4 +74,16 @@ public class Human implements Serializable, Comparable<Human> {
       return info + "\n" + fullName + " не имеет детей";
 
     return String.format(info + "\n%s дети: %s", appeal, children);
-  
+  }
+
+  @Override
+  public int compareTo(Human o) {
+    return fullName.compareTo(o.fullName);
+  }
+
+  @Override
+  public String toString() {
+    return String.format("Имя: %s, пол: %s", fullName, gender);
+  }
+
+}
